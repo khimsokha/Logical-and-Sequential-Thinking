@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="km">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>លំហាត់ដាក់លំដាប់ (Drag & Drop)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;600;700&family=Hanuman:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --primary:#2563eb;
+      --primaryHover:#1d4ed8;
+      --danger:#dc2626;
+      --success:#16a34a;
+      --shadow: 0 8px 24px rgba(0,0,0,.08);
+      --radius:16px;
+      --gap:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:"Noto Sans Khmer","Hanuman",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      line-height:1.5;
+    }
+    header{
+      padding:18px 16px 10px;
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:0 16px 20px;
+    }
+    .title{
+      font-size:20px;
+      font-weight:800;
+      margin:0 0 6px;
+      letter-spacing:.2px;
+    }
+    .subtitle{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      margin-bottom: 20px;
+    }
+
+    .setup{
+      padding:14px;
+      display:grid;
+      gap:12px;
+    }
+    .setup .row{
+      display:grid;
+      gap:12px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width:900px){
+      .setup .row{
+        grid-template-columns: 1.2fr .8fr;
+        align-items:start;
+      }
+    }
+    label{
+      font-weight:700;
+      font-size:14px;
+      display:block;
+      margin:0 0 8px;
+    }
+    textarea, input[type="text"], select {
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px 12px;
+      font-family:inherit;
+      font-size:15px;
+      outline:none;
+      background:#fff;
+      margin-bottom: 10px;
+    }
+    textarea{
+      min-height:140px;
+      resize:vertical;
+    }
+    textarea:focus, input[type="text"]:focus, select:focus{
+      border-color:rgba(37,99,235,.45);
+      box-shadow:0 0 0 4px rgba(37,99,235,.12);
+    }
+
+    .btns{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+    button{
+      border:none;
+      border-radius:14px;
+      padding:12px 14px;
+      font-family:inherit;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+      transition:.15s transform, .15s background, .15s opacity;
+      user-select:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+    button:active{ transform:scale(.99); }
+    button.primary{ background:var(--primary); color:#fff; }
+    button.primary:hover{ background:var(--primaryHover); }
+    button.ghost{
+      background:#f3f4f6;
+      color:var(--text);
+      border:1px solid var(--border);
+    }
+    button.ghost:hover{ background:#eef2ff; }
+    button.danger{ background:#fee2e2; color:var(--danger); border:1px solid #fecaca; }
+    button.danger:hover{ background:#ffd6d6; }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+
+    .hint{
+      color:var(--muted);
+      font-size:13px;
+      margin:0;
+    }
+
+    .activity{
+      padding:14px;
+    }
+    .activityTop{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      align-items:flex-start;
+      margin-bottom:12px;
+    }
+    .topicBox{
+      flex:1 1 320px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .topic{
+      font-weight:900;
+      font-size:16px;
+      margin:0;
+    }
+    .status{
+      flex:1 1 320px;
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      min-height:44px;
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#f9fafb;
+      font-weight:800;
+      font-size:14px;
+      white-space:nowrap;
+    }
+    .badge.ok{
+      border-color:rgba(22,163,74,.25);
+      background:rgba(22,163,74,.08);
+      color:var(--success);
+    }
+    .badge.no{
+      border-color:rgba(220,38,38,.25);
+      background:rgba(220,38,38,.07);
+      color:var(--danger);
+    }
+
+    .grid{
+      display:grid;
+      gap:14px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width:820px){
+      .grid{
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .col{
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      background:#fff;
+      min-height:320px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .colHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .colHeader h3{
+      margin:0;
+      font-size:15px;
+      font-weight:900;
+    }
+    .colHeader small{
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .dropzone{
+      flex:1;
+      border:2px dashed #d1d5db;
+      border-radius:14px;
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      background:#fafafa;
+      transition:.15s background, .15s border-color;
+    }
+    .dropzone.over{
+      background:#eef2ff;
+      border-color:rgba(37,99,235,.6);
+    }
+    .empty{
+      color:var(--muted);
+      font-weight:700;
+      font-size:13px;
+      text-align:center;
+      padding:18px 10px;
+      border-radius:14px;
+      border:1px dashed #e5e7eb;
+      background:#fff;
+    }
+
+    .item{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px 12px;
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.05);
+      cursor:grab;
+      touch-action:manipulation;
+    }
+    .item:active{ cursor:grabbing; }
+    .handle{
+      width:26px;
+      height:26px;
+      border-radius:10px;
+      background:#f3f4f6;
+      border:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      color:#374151;
+      flex:0 0 auto;
+      margin-top:1px;
+    }
+    .text{
+      font-weight:800;
+      font-size:15px;
+      word-break:break-word;
+      flex:1;
+    }
+    .meta{
+      color:var(--muted);
+      font-weight:800;
+      font-size:12px;
+      margin-left:auto;
+      padding-left:6px;
+      white-space:nowrap;
+    }
+
+    .dragging{
+      opacity:.6;
+      transform:rotate(-1deg);
+    }
+
+    .footerBtns{
+      margin-top:12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .note{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:13px;
+    }
+  </style>
+</head>
+<body>
+  <header class="wrap">
+    <h1 class="title">លំហាត់ដាក់លំដាប់ថ្នាក់ព័ត៌មានវិទ្យា</h1>
+    <p class="subtitle">ជ្រើសរើសមេរៀន ឬបញ្ចូលជំហានដោយខ្លួនឯង រួចឱ្យសិស្សរៀបតាមលំដាប់។</p>
+  </header>
+
+  <main class="wrap">
+    <section class="card setup" id="setupSection">
+      <div class="row">
+        <div>
+          <label for="lessonSelect">ជ្រើសរើសមេរៀនគំរូ</label>
+          <select id="lessonSelect">
+            <option value="">-- ជ្រើសរើសមេរៀន --</option>
+            <option value="pc">១. របៀបបើក និងបិទកុំព្យូទ័រ</option>
+            <option value="slides">២. របៀបបង្កើតស្លាយ (PowerPoint)</option>
+            <option value="search">៣. របៀបស្វែងរកព័ត៌មានតាមអ៊ីនធឺណិត</option>
+            <option value="createEmail">៤. របៀបបង្កើតអ៊ីមែល</option>
+            <option value="sendEmail">៥. របៀបផ្ញើអ៊ីមែល</option>
+          </select>
+
+          <label for="topicInput">ចំណងជើង / ប្រធានបទ</label>
+          <input id="topicInput" type="text" placeholder="ឧ. របៀបដុសធ្មេញ" />
+        </div>
+        <div>
+          <label for="stepsInput">ជំហាន (មួយជំហានក្នុងមួយបន្ទាត់)</label>
+          <textarea id="stepsInput" style="display: none;" placeholder="បញ្ចូលជំហាននៅទីនេះ..."></textarea>
+        </div>
+      </div>
+
+      <div class="btns">
+        <button id="createBtn" class="primary">បង្កើតសកម្មភាព</button>
+        <button id="clearInputBtn" class="ghost">សម្អាត (Clear)</button>
+        <span class="hint" id="teacherHint">រើសមេរៀនខាងលើ រួចចុច “បង្កើតសកម្មភាព”។</span>
+      </div>
+    </section>
+
+    <section class="card activity" style="display:none;" id="activityCard">
+      <div class="activityTop">
+        <div class="topicBox">
+          <p class="topic" id="topicTitle">ប្រធានបទ៖ —</p>
+          <span class="badge" id="countBadge">ចំនួនជំហាន៖ 0</span>
+        </div>
+        <div class="status">
+          <span class="badge" id="resultBadge">លទ្ធផល៖ មិនទាន់ពិនិត្យ</span>
+          <button id="checkBtn" class="primary">ពិនិត្យចម្លើយ</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="col">
+          <div class="colHeader">
+            <h3>ជំហានច្របល់ (Mixed)</h3>
+            <small>អូសពីទីនេះ →</small>
+          </div>
+          <div class="dropzone" id="mixedZone">
+            <div class="empty" id="mixedEmpty">មិនទាន់មានជំហានទេ</div>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="colHeader">
+            <h3>លំដាប់ត្រឹមត្រូវ (Order)</h3>
+            <small>ដាក់តាមលេខរៀង ១, ២, ...</small>
+          </div>
+          <div class="dropzone" id="correctZone">
+            <div class="empty" id="correctEmpty">អូសជំហានមកដាក់ទីនេះ</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footerBtns">
+        <button id="shuffleBtn" class="ghost">ច្របល់ឡើងវិញ</button>
+        <button id="changeBtn" class="danger">ប្តូរមេរៀន (Change Topic)</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function(){
+      const $ = (id) => document.getElementById(id);
+
+      // Lesson Data
+      const lessons = {
+        pc: {
+          title: "របៀបបើក និងបិទកុំព្យូទ័រ",
+          steps: ["ភ្ជាប់ខ្សែភ្លើងឲ្យបានត្រឹមត្រូវ", "ចុចបើកអាគុយ (UPS)", "ចុចប៊ូតុង Power នៅលើ ធុងប្រព័ន្ធ (System Unit)", "រង់ចាំប្រព័ន្ធដំណើរការ", "បញ្ចូលពាក្យសម្ងាត់ (បើមាន)", "ចាប់ផ្ដើមធ្វើការងារ", "ចុច Start → Shut down ដើម្បីបិទត្រឹមត្រូវ"]
+        },
+        slides: {
+          title: "របៀបបង្កើតស្លាយ",
+          steps: ["បើកកម្មវិធីពិព័រណ៍", "ជ្រើសរើស Blank Presentation", "បន្ថែមស្លាយថ្មី", "បញ្ចូលចំណងជើង និងអត្ថបទ", "បន្ថែមរូបភាព ឬ Animation", "ចុច Save ដើម្បីរក្សាទុក"]
+        },
+        search: {
+          title: "របៀបស្វែងរកព័ត៌មានតាមអ៊ីនធឺណិត",
+          steps: ["ភ្ជាប់កុំព្យូទ័រជាមួយអ៊ីនធឺណិត", "បើកកម្មវិធី Web Browser", "វាយពាក្យស្វែងរកក្នុងប្រអប់ Search", "ជ្រើសរើសគេហទំព័រដែលទុកចិត្តបាន", "អាន និងវាយកំណត់ចំណាំព័ត៌មានសំខាន់ៗ"]
+        },
+        createEmail: {
+          title: "របៀបបង្កើតអ៊ីមែល",
+          steps: ["បើក Web Browser", "ចូលទៅគេហទំព័រ Email (ឧ. Gmail)", "ចុច Create account", "បំពេញព័ត៌មានផ្ទាល់ខ្លួន", "បង្កើតពាក្យសម្ងាត់រឹងមាំ", "ចុច Sign up ដើម្បីបញ្ចប់"]
+        },
+        sendEmail: {
+          title: "របៀបផ្ញើអ៊ីមែល",
+          steps: ["ចូលគណនីអ៊ីមែល", "ចុច Compose", "បញ្ចូលអាសយដ្ឋានអ្នកទទួល", "វាយប្រធានបទ និងអត្ថបទ", "ភ្ជាប់ឯកសារ (បើចាំបាច់)", "ចុច Send"]
+        }
+      };
+
+      let originalSteps = [];
+
+      // Handle Lesson Selection
+      $("lessonSelect").addEventListener("change", (e) => {
+        const val = e.target.value;
+        if(lessons[val]){
+          $("topicInput").value = lessons[val].title;
+          $("stepsInput").value = lessons[val].steps.join("\n");
+        }
+      });
+
+      $("clearInputBtn").addEventListener("click", () => {
+        $("topicInput").value = "";
+        $("stepsInput").value = "";
+        $("lessonSelect").value = "";
+      });
+
+      // Create Activity
+      $("createBtn").addEventListener("click", () => {
+        const rawSteps = $("stepsInput").value.split("\n").map(s => s.trim()).filter(s => s !== "");
+        if(rawSteps.length < 2) return alert("សូមបញ្ចូលយ៉ាងហោចណាស់ ២ ជំហាន");
+
+        originalSteps = [...rawSteps];
+        $("topicTitle").textContent = "ប្រធានបទ៖ " + ($("topicInput").value || "លំហាត់ដាក់លំដាប់");
+        $("countBadge").textContent = "ចំនួនជំហាន៖ " + originalSteps.length;
+        
+        $("setupSection").style.display = "none";
+        $("activityCard").style.display = "block";
+        
+        renderItems(shuffleArray([...originalSteps]));
+      });
+
+      function renderItems(steps) {
+        $("mixedZone").innerHTML = '<div class="empty" id="mixedEmpty" style="display:none">មិនទាន់មានជំហានទេ</div>';
+        $("correctZone").innerHTML = '<div class="empty" id="correctEmpty">អូសជំហានមកដាក់ទីនេះ</div>';
+        steps.forEach(text => {
+          const item = createDraggableItem(text);
+          $("mixedZone").appendChild(item);
+        });
+        updateStatus();
+      }
+
+      function createDraggableItem(text) {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.draggable = true;
+        div.innerHTML = `<div class="handle">≡</div><div class="text">${text}</div><div class="meta">អូស</div>`;
+        
+        div.addEventListener("dragstart", () => div.classList.add("dragging"));
+        div.addEventListener("dragend", () => div.classList.remove("dragging"));
+        return div;
+      }
+
+      // Drag and Drop Logic
+      [ $("mixedZone"), $("correctZone") ].forEach(zone => {
+        zone.addEventListener("dragover", e => {
+          e.preventDefault();
+          const dragging = document.querySelector(".dragging");
+          const afterElement = getDragAfterElement(zone, e.clientY);
+          if (afterElement == null) zone.appendChild(dragging);
+          else zone.insertBefore(dragging, afterElement);
+          updateStatus();
+        });
+      });
+
+      function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll(".item:not(.dragging)")];
+        return draggableElements.reduce((closest, child) => {
+          const box = child.getBoundingClientRect();
+          const offset = y - box.top - box.height / 2;
+          if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+          else return closest;
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+      }
+
+      function updateStatus() {
+        $("mixedEmpty").style.display = $("mixedZone").querySelectorAll(".item").length ? "none" : "block";
+        $("correctEmpty").style.display = $("correctZone").querySelectorAll(".item").length ? "none" : "block";
+        setBadge(null, "លទ្ធផល៖ មិនទាន់ពិនិត្យ");
+      }
+
+      function setBadge(type, text) {
+        $("resultBadge").className = "badge " + (type || "");
+        $("resultBadge").textContent = text;
+      }
+
+      $("checkBtn").addEventListener("click", () => {
+        const studentSteps = [...$("correctZone").querySelectorAll(".text")].map(t => t.textContent);
+        if(studentSteps.length !== originalSteps.length) {
+          return setBadge("no", `❌ មិនទាន់គ្រប់ (ពិន្ទុ ${studentSteps.length}/${originalSteps.length})`);
+        }
+        
+        let correctCount = 0;
+        studentSteps.forEach((step, i) => { if(step === originalSteps[i]) correctCount++; });
+
+        if(correctCount === originalSteps.length) setBadge("ok", "✅ ត្រឹមត្រូវទាំងអស់!");
+        else setBadge("no", `❌ ខុសខ្លះ (ពិន្ទុ ${correctCount}/${originalSteps.length})`);
+      });
+
+      $("shuffleBtn").addEventListener("click", () => renderItems(shuffleArray([...originalSteps])));
+      $("changeBtn").addEventListener("click", () => {
+        $("setupSection").style.display = "grid";
+        $("activityCard").style.display = "none";
+      });
+
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+    })();
+  </script>
+</body>
+</html>
